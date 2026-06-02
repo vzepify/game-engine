@@ -3,93 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lightweight Game Engine</title>
+    <title>3D Game Engine - Editor</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #1a1a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .editor-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            grid-template-rows: 40px 1fr 200px;
+            height: 100vh;
+            gap: 1px;
+            background: #0a0a0a;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
             display: flex;
-            justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            padding: 0 15px;
+            gap: 15px;
         }
-        .container {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            flex-wrap: wrap;
+
+        .header h1 {
+            font-size: 16px;
+            font-weight: 600;
         }
-        .engine-section {
-            background: #2a2a2a;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+
+        .header button {
+            padding: 6px 12px;
+            background: #00a86b;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
         }
-        h2 {
-            color: #00ff00;
+
+        .header button:hover {
+            background: #00c878;
+        }
+
+        .header button.secondary {
+            background: #444;
+        }
+
+        .header button.secondary:hover {
+            background: #555;
+        }
+
+        .left-panel {
+            background: #1a1a1a;
+            border-right: 1px solid #333;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .panel-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #00a86b;
+            text-transform: uppercase;
             margin-bottom: 10px;
-            font-size: 18px;
+            padding: 5px;
         }
-        canvas {
-            border: 2px solid #00ff00;
-            background: #000;
+
+        .hierarchy-tree {
+            font-size: 12px;
+        }
+
+        .tree-item {
+            padding: 5px;
+            margin: 2px 0;
+            cursor: pointer;
+            border-radius: 3px;
+            user-select: none;
+        }
+
+        .tree-item:hover {
+            background: #333;
+        }
+
+        .tree-item.selected {
+            background: #00a86b;
+            color: #000;
+        }
+
+        .tree-item-add {
+            margin-top: 10px;
+            padding: 8px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 3px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tree-item-add:hover {
+            background: #444;
+        }
+
+        .center-panel {
+            background: #0a0a0a;
+            grid-column: 2;
+            grid-row: 2 / 3;
+            position: relative;
+        }
+
+        #viewport {
+            width: 100%;
+            height: 100%;
             display: block;
-            margin: 10px 0;
-            cursor: crosshair;
         }
-        .controls {
-            color: #aaa;
-            font-size: 12px;
-            line-height: 1.6;
-            margin-top: 10px;
-        }
-        .controls strong {
-            color: #00ff00;
-        }
-        .stats {
-            color: #00ff00;
-            font-size: 12px;
-            margin-top: 10px;
+
+        .viewport-stats {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 11px;
             font-family: monospace;
+            color: #00a86b;
+        }
+
+        .right-panel {
+            background: #1a1a1a;
+            border-left: 1px solid #333;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .inspector-section {
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .inspector-header {
+            background: #252525;
+            padding: 8px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #00a86b;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .inspector-content {
+            padding: 10px;
+            background: #1a1a1a;
+        }
+
+        .property {
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .property-label {
+            color: #999;
+            margin-bottom: 3px;
+            text-transform: capitalize;
+        }
+
+        .property input,
+        .property select {
+            width: 100%;
+            padding: 5px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .property input:focus,
+        .property select:focus {
+            outline: none;
+            border-color: #00a86b;
+            background: #2a2a2a;
+        }
+
+        .bottom-panel {
+            grid-column: 1 / -1;
+            background: #0a0a0a;
+            border-top: 1px solid #333;
+            overflow-y: auto;
+            padding: 10px;
+            font-size: 11px;
+            font-family: monospace;
+            color: #00a86b;
+        }
+
+        .console-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+        }
+
+        .console-error {
+            color: #ff6b6b;
+        }
+
+        .console-warning {
+            color: #ffa500;
+        }
+
+        .console-info {
+            color: #00a86b;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            width: 400px;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+            color: #00a86b;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: flex-end;
+        }
+
+        .modal-buttons button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .modal-buttons .btn-primary {
+            background: #00a86b;
+            color: white;
+        }
+
+        .modal-buttons .btn-primary:hover {
+            background: #00c878;
+        }
+
+        .modal-buttons .btn-secondary {
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        .modal-buttons .btn-secondary:hover {
+            background: #444;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="engine-section">
-            <h2>2D Engine</h2>
-            <canvas id="canvas2d" width="400" height="400"></canvas>
-            <div class="controls">
-                <strong>Controls:</strong><br>
-                Arrow Keys - Move Square<br>
-                Space - Jump<br>
-                Gravity enabled
-            </div>
-            <div class="stats" id="stats2d">FPS: 0</div>
+    <div class="editor-container">
+        <div class="header">
+            <h1>🎮 3D Game Engine</h1>
+            <button onclick="editor.playGame()">▶ Play</button>
+            <button class="secondary" onclick="editor.saveScene()">💾 Save</button>
+            <button class="secondary" onclick="editor.loadScene()">📂 Load</button>
+            <button class="secondary" onclick="editor.exportGame()">📦 Export</button>
         </div>
 
-        <div class="engine-section">
-            <h2>3D Engine (Three.js)</h2>
-            <canvas id="canvas3d" width="400" height="400"></canvas>
-            <div class="controls">
-                <strong>Controls:</strong><br>
-                Arrow Keys - Rotate Cube<br>
-                W/A/S/D - Move Camera<br>
-                Space - Up | Shift - Down
+        <div class="left-panel">
+            <div class="panel-title">Hierarchy</div>
+            <div id="hierarchy" class="hierarchy-tree"></div>
+            <div class="tree-item-add" onclick="editor.showAddObjectMenu()">+ Add Object</div>
+        </div>
+
+        <div class="center-panel">
+            <canvas id="viewport"></canvas>
+            <div class="viewport-stats">
+                <div>FPS: <span id="fps">0</span></div>
+                <div>Objects: <span id="objectCount">0</span></div>
+                <div>Triangles: <span id="triangles">0</span></div>
             </div>
-            <div class="stats" id="stats3d">FPS: 0</div>
+        </div>
+
+        <div class="right-panel">
+            <div class="panel-title">Inspector</div>
+            <div id="inspector"></div>
+        </div>
+
+        <div class="bottom-panel" id="console"></div>
+    </div>
+
+    <div class="modal" id="addObjectModal">
+        <div class="modal-content">
+            <h3>Add Object to Scene</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button onclick="editor.addObject('cube')" class="tree-item-add">📦 Cube</button>
+                <button onclick="editor.addObject('sphere')" class="tree-item-add">🔮 Sphere</button>
+                <button onclick="editor.addObject('plane')" class="tree-item-add">📋 Plane</button>
+                <button onclick="editor.addObject('cylinder')" class="tree-item-add">🔩 Cylinder</button>
+                <button onclick="editor.addObject('pyramid')" class="tree-item-add">📐 Pyramid</button>
+                <button onclick="editor.addObject('camera')" class="tree-item-add">📷 Camera</button>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="document.getElementById('addObjectModal').classList.remove('active')">Cancel</button>
+            </div>
         </div>
     </div>
 
-    <script src="engine2d.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="engine3d.js"></script>
-    <script src="example2d.js"></script>
-    <script src="example3d.js"></script>
+    <script src="engine/core.js"></script>
+    <script src="engine/scene-manager.js"></script>
+    <script src="engine/game-object.js"></script>
+    <script src="engine/components.js"></script>
+    <script src="engine/input-manager.js"></script>
+    <script src="engine/physics.js"></script>
+    <script src="editor/editor.js"></script>
+    <script src="editor/inspector.js"></script>
+    <script src="editor/console.js"></script>
 </body>
 </html>
