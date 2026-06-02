@@ -10,7 +10,9 @@ class Editor {
         this.updateHierarchy();
         this.setupEventListeners();
         
-        console.log('Editor initialized');
+        console.log('✅ Editor initialized');
+        console.log('📷 Camera Controls: Middle Mouse to rotate, Scroll to zoom');
+        console.log('⌨️ WASD to move, Space/Shift for up/down');
     }
 
     setupEventListeners() {
@@ -64,6 +66,7 @@ class Editor {
         
         document.getElementById('addObjectModal').classList.remove('active');
         
+        console.log(`✨ Added ${type}`);
         return obj;
     }
 
@@ -76,17 +79,17 @@ class Editor {
 
     deleteObject(obj) {
         if (obj) {
+            const name = obj.name;
             obj.destroy(this.engine);
-            this.engine.sceneManager.removeObjectFromScene = (o) => {
-                const scene = this.engine.sceneManager.currentScene;
-                const index = scene.gameObjects.indexOf(o);
-                if (index > -1) scene.gameObjects.splice(index, 1);
-            };
-            this.engine.sceneManager.removeObjectFromScene(obj);
+            if (this.engine.sceneManager.currentScene) {
+                this.engine.sceneManager.currentScene.gameObjects = 
+                    this.engine.sceneManager.currentScene.gameObjects.filter(o => o !== obj);
+            }
             this.selectedObject = null;
             this.selectedObjectId = null;
             this.updateHierarchy();
             this.updateInspector();
+            console.log(`🗑️ Deleted ${name}`);
         }
     }
 
@@ -127,33 +130,33 @@ class Editor {
                     <div class="property-label">Position</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
                         <input type="number" step="0.1" value="${this.selectedObject.position.x.toFixed(2)}" 
-                            onchange="editor.selectedObject.position.x = parseFloat(this.value)">
+                            onchange="editor.selectedObject.position.x = parseFloat(this.value);">
                         <input type="number" step="0.1" value="${this.selectedObject.position.y.toFixed(2)}" 
-                            onchange="editor.selectedObject.position.y = parseFloat(this.value)">
+                            onchange="editor.selectedObject.position.y = parseFloat(this.value);">
                         <input type="number" step="0.1" value="${this.selectedObject.position.z.toFixed(2)}" 
-                            onchange="editor.selectedObject.position.z = parseFloat(this.value)">
+                            onchange="editor.selectedObject.position.z = parseFloat(this.value);">
                     </div>
                 </div>
                 <div class="property">
                     <div class="property-label">Rotation</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
                         <input type="number" step="0.1" value="${this.selectedObject.rotation.x.toFixed(2)}" 
-                            onchange="editor.selectedObject.rotation.x = parseFloat(this.value)">
+                            onchange="editor.selectedObject.rotation.x = parseFloat(this.value);">
                         <input type="number" step="0.1" value="${this.selectedObject.rotation.y.toFixed(2)}" 
-                            onchange="editor.selectedObject.rotation.y = parseFloat(this.value)">
+                            onchange="editor.selectedObject.rotation.y = parseFloat(this.value);">
                         <input type="number" step="0.1" value="${this.selectedObject.rotation.z.toFixed(2)}" 
-                            onchange="editor.selectedObject.rotation.z = parseFloat(this.value)">
+                            onchange="editor.selectedObject.rotation.z = parseFloat(this.value);">
                     </div>
                 </div>
                 <div class="property">
                     <div class="property-label">Scale</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
                         <input type="number" step="0.1" value="${this.selectedObject.scale.x.toFixed(2)}" 
-                            onchange="editor.selectedObject.scale.x = parseFloat(this.value)">
+                            onchange="editor.selectedObject.scale.x = parseFloat(this.value);">
                         <input type="number" step="0.1" value="${this.selectedObject.scale.y.toFixed(2)}" 
-                            onchange="editor.selectedObject.scale.y = parseFloat(this.value)">
+                            onchange="editor.selectedObject.scale.y = parseFloat(this.value);">
                         <input type="number" step="0.1" value="${this.selectedObject.scale.z.toFixed(2)}" 
-                            onchange="editor.selectedObject.scale.z = parseFloat(this.value)">
+                            onchange="editor.selectedObject.scale.z = parseFloat(this.value);">
                     </div>
                 </div>
             </div>
@@ -179,23 +182,71 @@ class Editor {
             let compHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <strong>${comp.constructor.name}</strong>
-                    <button style="padding: 4px 8px; background: #ff6b6b; border: none; color: white; border-radius: 3px; cursor: pointer; font-size: 11px;">Remove</button>
+                    <button onclick="editor.selectedObject.removeComponent(${comp.constructor.name}); editor.updateInspector();" style="
+                        padding: 4px 8px;
+                        background: #ff6b6b;
+                        border: none;
+                        color: white;
+                        border-radius: 3px;
+                        cursor: pointer;
+                        font-size: 11px;
+                    ">Remove</button>
                 </div>
             `;
 
             if (comp instanceof Rigidbody) {
                 compHTML += `
-                    <div class="property"><label class="property-label">Mass</label><input type="number" value="${comp.mass}" onchange="editor.selectedObject.getComponent(Rigidbody).mass = parseFloat(this.value)"></div>
-                    <div class="property"><label class="property-label"><input type="checkbox" ${comp.useGravity ? 'checked' : ''} onchange="editor.selectedObject.getComponent(Rigidbody).useGravity = this.checked"> Use Gravity</label></div>
+                    <div class="property">
+                        <label class="property-label">Mass</label>
+                        <input type="number" value="${comp.mass}" onchange="editor.selectedObject.getComponent(Rigidbody).mass = parseFloat(this.value);">
+                    </div>
+                    <div class="property">
+                        <label class="property-label"><input type="checkbox" ${comp.useGravity ? 'checked' : ''} onchange="editor.selectedObject.getComponent(Rigidbody).useGravity = this.checked;"> Use Gravity</label>
+                    </div>
+                    <div class="property">
+                        <label class="property-label"><input type="checkbox" ${comp.isKinematic ? 'checked' : ''} onchange="editor.selectedObject.getComponent(Rigidbody).isKinematic = this.checked;"> Is Kinematic</label>
+                    </div>
+                    <div class="property">
+                        <label class="property-label">Drag</label>
+                        <input type="number" step="0.01" value="${comp.drag}" onchange="editor.selectedObject.getComponent(Rigidbody).drag = parseFloat(this.value);">
+                    </div>
                 `;
             } else if (comp instanceof BoxCollider) {
                 compHTML += `
-                    <div class="property"><label class="property-label">Width</label><input type="number" step="0.1" value="${comp.width}" onchange="editor.selectedObject.getComponent(BoxCollider).width = parseFloat(this.value)"></div>
-                    <div class="property"><label class="property-label">Height</label><input type="number" step="0.1" value="${comp.height}" onchange="editor.selectedObject.getComponent(BoxCollider).height = parseFloat(this.value)"></div>
-                    <div class="property"><label class="property-label">Depth</label><input type="number" step="0.1" value="${comp.depth}" onchange="editor.selectedObject.getComponent(BoxCollider).depth = parseFloat(this.value)"></div>
+                    <div class="property">
+                        <label class="property-label">Width</label>
+                        <input type="number" step="0.1" value="${comp.width}" onchange="editor.selectedObject.getComponent(BoxCollider).width = parseFloat(this.value);">
+                    </div>
+                    <div class="property">
+                        <label class="property-label">Height</label>
+                        <input type="number" step="0.1" value="${comp.height}" onchange="editor.selectedObject.getComponent(BoxCollider).height = parseFloat(this.value);">
+                    </div>
+                    <div class="property">
+                        <label class="property-label">Depth</label>
+                        <input type="number" step="0.1" value="${comp.depth}" onchange="editor.selectedObject.getComponent(BoxCollider).depth = parseFloat(this.value);">
+                    </div>
+                    <div class="property">
+                        <label class="property-label"><input type="checkbox" ${comp.isTrigger ? 'checked' : ''} onchange="editor.selectedObject.getComponent(BoxCollider).isTrigger = this.checked;"> Is Trigger</label>
+                    </div>
+                `;
+            } else if (comp instanceof Movement) {
+                compHTML += `
+                    <div class="property">
+                        <label class="property-label">Speed</label>
+                        <input type="number" step="0.1" value="${comp.speed}" onchange="editor.selectedObject.getComponent(Movement).speed = parseFloat(this.value);">
+                    </div>
+                    <div class="property">
+                        <label class="property-label">Rotation Speed</label>
+                        <input type="number" step="0.1" value="${comp.rotationSpeed}" onchange="editor.selectedObject.getComponent(Movement).rotationSpeed = parseFloat(this.value);">
+                    </div>
                 `;
             } else if (comp instanceof Script) {
-                compHTML += `<div class="property"><textarea style="width: 100%; min-height: 100px; padding: 5px; background: #1a1a1a; border: 1px solid #333; color: #e0e0e0; border-radius: 3px; font-family: monospace; font-size: 11px;" onchange="editor.selectedObject.getComponent(Script).scriptCode = this.value">${comp.scriptCode}</textarea></div>`;
+                compHTML += `
+                    <div class="property">
+                        <label class="property-label">Script Code</label>
+                        <textarea style="width: 100%; min-height: 120px; padding: 5px; background: #1a1a1a; border: 1px solid #333; color: #e0e0e0; border-radius: 3px; font-family: monospace; font-size: 11px; resize: vertical;" onchange="editor.selectedObject.getComponent(Script).scriptCode = this.value;">${comp.scriptCode}</textarea>
+                    </div>
+                `;
             }
 
             compDiv.innerHTML = compHTML;
@@ -225,8 +276,8 @@ class Editor {
                     <button onclick="editor.selectedObject.addComponent(new Rigidbody()); editor.updateInspector(); this.closest('.modal').remove();" class="tree-item-add">Rigidbody</button>
                     <button onclick="editor.selectedObject.addComponent(new BoxCollider()); editor.updateInspector(); this.closest('.modal').remove();" class="tree-item-add">Box Collider</button>
                     <button onclick="editor.selectedObject.addComponent(new Movement()); editor.updateInspector(); this.closest('.modal').remove();" class="tree-item-add">Movement</button>
-                    <button onclick="editor.selectedObject.addComponent(new Script()); editor.updateInspector(); this.closest('.modal').remove();" class="tree-item-add">Script</button>
                     <button onclick="editor.selectedObject.addComponent(new Animator()); editor.updateInspector(); this.closest('.modal').remove();" class="tree-item-add">Animator</button>
+                    <button onclick="editor.selectedObject.addComponent(new Script()); editor.updateInspector(); this.closest('.modal').remove();" class="tree-item-add">Script</button>
                     <button onclick="editor.selectedObject.addComponent(new AudioSource()); editor.updateInspector(); this.closest('.modal').remove();" class="tree-item-add">Audio</button>
                 </div>
                 <div class="modal-buttons">
@@ -249,14 +300,16 @@ class Editor {
         const sceneData = this.engine.sceneManager.saveSceneToJSON();
         const json = JSON.stringify(sceneData, null, 2);
         localStorage.setItem('game-scene', json);
-        console.log('Scene saved!');
+        console.log('✅ Scene saved to browser storage!');
     }
 
     loadScene() {
         const json = localStorage.getItem('game-scene');
         if (json) {
             const data = JSON.parse(json);
-            console.log('Scene loaded!');
+            console.log('✅ Scene loaded from browser storage!');
+        } else {
+            console.log('❌ No saved scene found!');
         }
     }
 
@@ -269,7 +322,8 @@ class Editor {
         a.href = url;
         a.download = 'game-scene.json';
         a.click();
-        console.log('Game exported!');
+        URL.revokeObjectURL(url);
+        console.log('✅ Game exported as game-scene.json!');
     }
 }
 
