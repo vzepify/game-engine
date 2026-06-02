@@ -11,8 +11,8 @@ class Editor {
         this.setupEventListeners();
         
         console.log('✅ Editor initialized');
-        console.log('📷 Camera Controls: Middle Mouse to rotate, Scroll to zoom');
-        console.log('⌨️ WASD to move, Space/Shift for up/down');
+        console.log('📷 Camera: Middle-Click drag to rotate, Scroll to zoom');
+        console.log('⌨️ Keys: WASD move, Space/Shift up/down');
     }
 
     setupEventListeners() {
