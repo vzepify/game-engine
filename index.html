@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightweight Game Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+        .engine-section {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        h2 {
+            color: #00ff00;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        canvas {
+            border: 2px solid #00ff00;
+            background: #000;
+            display: block;
+            margin: 10px 0;
+            cursor: crosshair;
+        }
+        .controls {
+            color: #aaa;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+        .controls strong {
+            color: #00ff00;
+        }
+        .stats {
+            color: #00ff00;
+            font-size: 12px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="engine-section">
+            <h2>2D Engine</h2>
+            <canvas id="canvas2d" width="400" height="400"></canvas>
+            <div class="controls">
+                <strong>Controls:</strong><br>
+                Arrow Keys - Move Square<br>
+                Space - Jump<br>
+                Gravity enabled
+            </div>
+            <div class="stats" id="stats2d">FPS: 0</div>
+        </div>
+
+        <div class="engine-section">
+            <h2>3D Engine (Three.js)</h2>
+            <canvas id="canvas3d" width="400" height="400"></canvas>
+            <div class="controls">
+                <strong>Controls:</strong><br>
+                Arrow Keys - Rotate Cube<br>
+                W/A/S/D - Move Camera<br>
+                Space - Up | Shift - Down
+            </div>
+            <div class="stats" id="stats3d">FPS: 0</div>
+        </div>
+    </div>
+
+    <script src="engine2d.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="engine3d.js"></script>
+    <script src="example2d.js"></script>
+    <script src="example3d.js"></script>
+</body>
+</html>
